@@ -6,9 +6,11 @@ st.set_page_config(page_title="Painel Letalk", layout="centered", page_icon="�
 
 # ============ AUTENTICAÇÃO ============
 users = {
-    "assinaturas@letalk.com.br": {
-        "name": "Time Letalk",
-        "password": "$2b$12$7GWaOYq1llG2lvAsRtuv0evK7hNPCEqxE.G6eNO/sXD0KRpQid4pG"
+    "usernames": {
+        "assinaturas@letalk.com.br": {
+            "name": "Time Letalk",
+            "password": "$2b$12$7GWaOYq1llG2lvAsRtuv0evK7hNPCEqxE.G6eNO/sXD0KRpQid4pG"
+        }
     }
 }
 
