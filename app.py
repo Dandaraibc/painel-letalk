@@ -21,6 +21,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
+# 👇 login no formato POSICIONAL compatível
 name, authentication_status, username = authenticator.login("Login", "main")
 
 if authentication_status is False:
@@ -37,7 +38,7 @@ elif authentication_status:
         "📢 Avisos"
     ])
 
-    # === BLOQUEIO DE INSTÂNCIAS ===
+    # BLOQUEIO DE INSTÂNCIAS
     with aba_bloqueio:
         st.subheader("🔒 Bloquear instâncias por ID")
         ids_input = st.text_area("Cole os IDs separados por vírgula", placeholder="Ex: 7618, 7620, 8001")
@@ -61,7 +62,7 @@ elif authentication_status:
                     except Exception as e:
                         st.error(f"Erro na conexão com a API: {e}")
 
-    # === BLOQUEIO DE CANCELADOS ===
+    # BLOQUEIO DE CANCELADOS
     with aba_cancelados:
         st.subheader("🚫 Bloqueio de Cancelados (sem notificação)")
         ids_cancelados = st.text_area("Cole os IDs dos cancelados", placeholder="Ex: 7618, 7844")
@@ -85,7 +86,7 @@ elif authentication_status:
                     except Exception as e:
                         st.error(f"Erro na conexão com a API: {e}")
 
-    # === AVISOS ===
+    # AVISOS
     with aba_avisos:
         st.subheader("📢 Enviar Avisos para Instâncias")
         ids_avisos = st.text_area("Cole os IDs para envio do aviso", placeholder="Ex: 7618, 7654")
