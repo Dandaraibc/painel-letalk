@@ -15,21 +15,19 @@ users = {
 }
 
 authenticator = stauth.Authenticate(
-    credentials=users,
-    cookie_name="painel_letalk",
-    key="auth_token",
+    users,
+    "painel_letalk",
+    "auth_token",
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login(form_name="Login", location="main")
+name, authentication_status, username = authenticator.login("Login", "main")
 
-# Proteção do painel
 if authentication_status is False:
     st.error("Usuário ou senha inválidos.")
 elif authentication_status is None:
     st.warning("Digite suas credenciais para continuar.")
 elif authentication_status:
-
     st.success(f"Bem-vinda, {name} 👋")
 
     # === TABS ===
