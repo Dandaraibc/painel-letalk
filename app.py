@@ -15,12 +15,13 @@ users = {
 }
 
 authenticator = stauth.Authenticate(
-    users,
-    "painel_letalk", "auth_token",
+    credentials=users,
+    cookie_name="painel_letalk",
+    key="auth_token",
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login("Login", "main")
+name, authentication_status, username = authenticator.login(form_name="Login", location="main")
 
 # Proteção do painel
 if authentication_status is False:
