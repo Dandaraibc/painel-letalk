@@ -1,9 +1,34 @@
 import streamlit as st
+import streamlit_authenticator as stauth
 import requests
 
 st.set_page_config(page_title="Painel Letalk", layout="centered", page_icon="💬")
 
-st.title("🛠️ Painel de Automação - Letalk")
+# ============ AUTENTICAÇÃO ============
+# Credenciais
+users = {
+    "assinaturas@letalk.com.br": {
+        "name": "Time Letalk",
+        "password": stauth.Hasher(["7jK@t2XzQp!r"]).generate()[0]
+    }
+}
+
+authenticator = stauth.Authenticate(
+    users,
+    "painel_letalk", "auth_token",
+    cookie_expiry_days=1
+)
+
+# Formulário de login
+name, authentication_status, username = authenticator.login("Login", "main")
+
+# Proteção do painel
+if authentication_status is False:
+    st.error("Usuário ou senha inválidos.")
+elif authentication_status is None:
+    st.warning("Digite suas credenciais para continuar.")
+elif authentication_status:
+    st.success(f"Bem-vinda, {name} 👋")
 
 # Tabs
 aba_bloqueio, aba_cancelados, aba_avisos = st.tabs(["🔒 Bloqueio de Instâncias", "🚫 Bloqueio de Cancelados", "📢 Avisos"])
