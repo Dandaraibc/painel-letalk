@@ -65,7 +65,7 @@ with aba_avisos:
     st.subheader("📢 Enviar Avisos para Instâncias")
     ids_avisos = st.text_area("Cole os IDs para envio do aviso", placeholder="Ex: 7618, 7654")
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     if col1.button("📩 Aviso de Bloqueio"):
         ids = [i.strip() for i in ids_avisos.split(",") if i.strip()]
@@ -120,3 +120,23 @@ with aba_avisos:
                         st.error(f"Erro: {res.status_code}")
                 except Exception as e:
                     st.error(f"Erro: {e}")
+
+    if col4.button("🔄 Recuperar Cancelamento"):
+        ids = [i.strip() for i in ids_avisos.split(",") if i.strip()]
+        if ids:
+            with st.spinner("Enviando solicitação de recuperação..."):
+                try:
+                    res = requests.post(
+                        "https://webhook.letalk.com.br/b092b8a0-9433-4e3d-b14b-e7894b7cc8b3",
+                        json={"instance_ids": ids}
+                    )
+                    if res.status_code == 200:
+                        st.success("Recuperação enviada com sucesso!")
+                        for log in res.json().get("log", []):
+                            st.markdown(f"- {log}")
+                    else:
+                        st.error(f"Erro: {res.status_code}")
+                except Exception as e:
+                    st.error(f"Erro: {e}")
+        else:
+            st.warning("Informe ao menos um ID.")
