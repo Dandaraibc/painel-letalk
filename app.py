@@ -1,142 +1,64 @@
 import streamlit as st
 import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+import time
 
-st.set_page_config(page_title="Painel Letalk", layout="centered", page_icon="💬")
+st.set_page_config(page_title="Painel Letalk – Bloqueios e Avisos")
 
 st.title("🔧 Painel Letalk – Bloqueios e Avisos")
+st.subheader("📢 Enviar Avisos para Instâncias")
 
-# === TABS ===
-aba_bloqueio, aba_cancelados, aba_avisos = st.tabs([
-    "🔒 Bloqueio de Instâncias",
-    "🚫 Bloqueio de Cancelados",
-    "📢 Avisos"
-])
+ids_aviso = st.text_area("Cole os IDs para envio do aviso", placeholder="Ex: 7618, 7654")
 
-# === BLOQUEIO DE INSTÂNCIAS ===
-with aba_bloqueio:
-    st.subheader("🔒 Bloquear instâncias por ID")
-    ids_input = st.text_area("Cole os IDs separados por vírgula", placeholder="Ex: 7618, 7620, 8001")
-    if st.button("🚀 Bloquear Instâncias"):
-        if not ids_input.strip():
-            st.warning("Informe pelo menos um ID.")
-        else:
-            ids = [i.strip() for i in ids_input.split(",") if i.strip()]
-            with st.spinner("Processando..."):
-                try:
-                    res = requests.post(
-                        "https://api-bloqueio-production.up.railway.app/bloquear",
-                        json={"instance_ids": ids}
-                    )
-                    if res.status_code == 200:
-                        st.success("Bloqueio realizado com sucesso!")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
-                    else:
-                        st.error(f"Erro: {res.status_code}")
-                except Exception as e:
-                    st.error(f"Erro na conexão com a API: {e}")
+col1, col2, col3, col4 = st.columns(4)
 
-# === BLOQUEIO DE CANCELADOS ===
-with aba_cancelados:
-    st.subheader("🚫 Bloqueio de Cancelados (sem notificação)")
-    ids_cancelados = st.text_area("Cole os IDs dos cancelados", placeholder="Ex: 7618, 7844")
-    if st.button("🔒 Bloquear Cancelados"):
-        if not ids_cancelados.strip():
-            st.warning("Informe pelo menos um ID.")
-        else:
-            ids = [i.strip() for i in ids_cancelados.split(",") if i.strip()]
-            with st.spinner("Bloqueando cancelados..."):
-                try:
-                    res = requests.post(
-                        "https://api-bloqueio-production.up.railway.app/bloquear_cancelados",
-                        json={"instance_ids": ids}
-                    )
-                    if res.status_code == 200:
-                        st.success("Cancelados bloqueados com sucesso!")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
-                    else:
-                        st.error(f"Erro: {res.status_code}")
-                except Exception as e:
-                    st.error(f"Erro na conexão com a API: {e}")
+# Função para capturar o telefone
+def pegar_telefone(instance_id):
+    chrome_options = Options()
+    chrome_options.add_argument('--headless')  # roda em segundo plano
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
 
-# === AVISOS ===
-with aba_avisos:
-    st.subheader("📢 Enviar Avisos para Instâncias")
-    ids_avisos = st.text_area("Cole os IDs para envio do aviso", placeholder="Ex: 7618, 7654")
+    try:
+        driver = webdriver.Chrome(options=chrome_options)
+        url = f"https://cp.letalk.com.br/attendance/chat?phone={instance_id}"
+        driver.get(url)
+        time.sleep(5)  # dá tempo da página carregar
 
-    col1, col2, col3, col4 = st.columns(4)
+        telefone_element = driver.find_element(By.XPATH, '//span[contains(text(), "+55")]')
+        telefone = telefone_element.text.strip()
+        driver.quit()
+        return telefone
+    except Exception as e:
+        driver.quit()
+        return f"Erro: {e}"
 
-    if col1.button("📩 Aviso de Bloqueio"):
-        ids = [i.strip() for i in ids_avisos.split(",") if i.strip()]
-        if ids:
-            with st.spinner("Enviando aviso de bloqueio..."):
-                try:
-                    res = requests.post(
-                        "https://api-bloqueio-production.up.railway.app/avisar_bloqueio",
-                        json={"instance_ids": ids}
-                    )
-                    if res.status_code == 200:
-                        st.success("Aviso de bloqueio enviado.")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
-                    else:
-                        st.error(f"Erro: {res.status_code}")
-                except Exception as e:
-                    st.error(f"Erro: {e}")
-
-    if col2.button("📆 Aviso de Inadimplência (10 dias)"):
-        ids = [i.strip() for i in ids_avisos.split(",") if i.strip()]
-        if ids:
-            with st.spinner("Enviando aviso de inadimplência..."):
-                try:
-                    res = requests.post(
-                        "https://api-bloqueio-production.up.railway.app/avisar_inadimplencia",
-                        json={"instance_ids": ids}
-                    )
-                    if res.status_code == 200:
-                        st.success("Aviso de inadimplência enviado.")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
-                    else:
-                        st.error(f"Erro: {res.status_code}")
-                except Exception as e:
-                    st.error(f"Erro: {e}")
-
-    if col3.button("⛔ Aviso de Encerramento"):
-        ids = [i.strip() for i in ids_avisos.split(",") if i.strip()]
-        if ids:
-            with st.spinner("Enviando aviso de encerramento..."):
-                try:
-                    res = requests.post(
-                        "https://api-bloqueio-production.up.railway.app/avisar_encerramento",
-                        json={"instance_ids": ids}
-                    )
-                    if res.status_code == 200:
-                        st.success("Aviso de encerramento enviado.")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
-                    else:
-                        st.error(f"Erro: {res.status_code}")
-                except Exception as e:
-                    st.error(f"Erro: {e}")
-
-    if col4.button("🔄 Recuperar Cancelamento"):
-        ids = [i.strip() for i in ids_avisos.split(",") if i.strip()]
-        if ids:
-            with st.spinner("Enviando solicitação de recuperação..."):
-                try:
-                    res = requests.post(
-                        "https://webhook.letalk.com.br/b092b8a0-9433-4e3d-b14b-e7894b7cc8b3",
-                        json={"instance_ids": ids}
-                    )
-                    if res.status_code == 200:
-                        st.success("Recuperação enviada com sucesso!")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
-                    else:
-                        st.error(f"Erro: {res.status_code}")
-                except Exception as e:
-                    st.error(f"Erro: {e}")
-        else:
-            st.warning("Informe ao menos um ID.")
+# Botão para recuperar cancelamento
+if col4.button("♻️ Recuperar Cancelamento"):
+    ids = [i.strip() for i in ids_aviso.split(",") if i.strip()]
+    if ids:
+        with st.spinner("Enviando solicitação de recuperação..."):
+            instancias = []
+            for i in ids:
+                telefone = pegar_telefone(i)
+                instancias.append({
+                    "id": i,
+                    "telefone": telefone
+                })
+            try:
+                res = requests.post(
+                    "https://webhook.letalk.com.br/b092b8a0-9433-4e3d-b14b-e7894b7cc8b3",
+                    json={"instances": instancias}
+                )
+                if res.status_code == 200:
+                    st.success("✅ Recuperação enviada com sucesso!")
+                    for log in res.json().get("log", []):
+                        st.markdown(f"- {log}")
+                else:
+                    st.error(f"❌ Erro: {res.status_code}")
+            except Exception as e:
+                st.error(f"❌ Erro: {e}")
+    else:
+        st.warning("⚠️ Informe ao menos um ID.")
