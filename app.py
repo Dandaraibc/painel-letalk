@@ -64,6 +64,7 @@ with aba_cancelados:
 with aba_avisos:
     st.subheader("📢 Enviar Avisos para Instâncias")
     ids_avisos = st.text_area("Cole os IDs para envio do aviso", placeholder="Ex: 7618, 7654")
+    telefone_cliente = st.text_input("Telefone do cliente (opcional)", placeholder="Ex: +55 11 91234-5678")
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -127,13 +128,14 @@ with aba_avisos:
             with st.spinner("Enviando solicitação de recuperação..."):
                 try:
                     res = requests.post(
-                        "https://webhook.letalk.com.br/b092b8a0-9433-4e3d-b14b-e7894b7cc8b3",
-                        json={"instance_ids": ids}
+                        "https://webhook.letalk.com.br/40dcf853-2283-40e5-b71d-d682a6864892",
+                        json={
+                            "instance_ids": ids,
+                            "telefone": telefone_cliente
+                        }
                     )
                     if res.status_code == 200:
                         st.success("Recuperação enviada com sucesso!")
-                        for log in res.json().get("log", []):
-                            st.markdown(f"- {log}")
                     else:
                         st.error(f"Erro: {res.status_code}")
                 except Exception as e:
